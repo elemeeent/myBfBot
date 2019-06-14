@@ -1,17 +1,13 @@
 package dataParser;
 
-import io.restassured.response.Response;
-import pojo.lastMaps.DataReportsRequest;
-import pojo.lastMaps.Report;
+import lombok.extern.slf4j.Slf4j;
 import pojo.mapReport.DataMapRequest;
 import pojo.mapReport.LastChildren;
 import pojo.mapReport.MainChildren;
 import pojo.profileStats.DataStatsRequest;
 import pojo.profileStats.statsNodes.Stat;
 
-import static requests.BattlefieldStatsRequest.getGameReport;
-import static requests.BattlefieldStatsRequest.getLastGames;
-
+@Slf4j
 public class JsonParseHelper {
 
     private static String[] playerStats = {
@@ -61,38 +57,21 @@ public class JsonParseHelper {
                     for (Stat playerStat : playerStats) {
                         for (int i = 0; i < playerMapStats.length; i++) {
                             if (playerStat.getMetadata().getKey().equalsIgnoreCase(playerMapStats[i])) {
-                                stringBuilder
-                                        .append(playerStat.getMetadata().getName())
-                                        .append(": ")
-                                        .append(playerStat.getDisplayValue())
-                                        .append("\n");
-
+                                try {
+                                    stringBuilder
+                                            .append(playerStat.getMetadata().getName())
+                                            .append(": ")
+                                            .append(playerStat.getDisplayValue())
+                                            .append("\n");
+                                } catch (Exception e) {
+                                    log.error("Error parse player stats. {}", e);
+                                    stringBuilder = new StringBuilder("Error at gathering player stats");
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        return stringBuilder;
-    }
-
-    public static StringBuilder getLastMapsStats(String playerName, StringBuilder stringBuilder) {
-        DataReportsRequest playerLastGames = getLastGames(playerName).as(DataReportsRequest.class);
-
-        Report[] reports = playerLastGames.getData().getReports();
-
-
-        for (int i = 0; i < 3; i++) {
-            String gameReportId = reports[i].getGameReportId();
-            Response gameReport = getGameReport(gameReportId);
-            DataMapRequest dataMapRequest = gameReport.as(DataMapRequest.class);
-            stringBuilder
-                    .append("\n")
-                    .append(reports[i].getMode().getName())
-                    .append(": ")
-                    .append(reports[i].getMap().getName())
-                    .append("\n")
-                    .append(parseMapStatsToString(dataMapRequest, playerName));
         }
         return stringBuilder;
     }
