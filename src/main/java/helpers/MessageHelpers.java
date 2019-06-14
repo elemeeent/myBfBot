@@ -40,8 +40,9 @@ public class MessageHelpers {
                     getChannel()
                     .sendMessage(
                             "\nCurrent commands:" +
-                                    "\n1) type '/stats %playerName%' to get his statistics" +
-                                    "\n2) type '/compare %playerName% %playerName' to compare 2 players (in develop)"
+                                    "\n1) type '//stats %playerName%' to get his statistics" +
+                                    "\n2) type '//map %playerName%' to get his statistics at last maps" +
+                                    "\n3) type '//compare %playerName% %playerName' to compare 2 players (in develop)"
                     )
                     .queue();
         }
@@ -127,26 +128,13 @@ public class MessageHelpers {
         Response gameReport = getGameReport(gameReportId);
         DataMapRequest dataMapRequest = gameReport.as(DataMapRequest.class);
         System.out.println(report.toString());
-//        try {
-//            if (report.getMode().getName() != null && report.getMap().getName() != null) {
-//                stringBuilder
-//                        .append("\n")
-//                        .append(report.getMode().getName())
-//                        .append(": ")
-//                        .append(report.getMap().getName())
-//                        .append("\n");
-//            }
         stringBuilder.append(parseMapStatsToString(dataMapRequest, playerName));
-//        } catch (NullPointerException e) {
-//            log.error("Error parse player last maps stats.", e);
-//            stringBuilder = new StringBuilder("Error at gathering player last maps stats");
-//        }
         return stringBuilder;
     }
 
     public static void main(String[] args) {
         StringBuilder stringBuilder = null;
-        String playerName = "ne_variik";
+        String playerName = "i_am_prooo_tv";
         Response lastGames = getLastGames(playerName);
 
         if (lastGames.getStatusCode() == HttpStatus.SC_OK) {
