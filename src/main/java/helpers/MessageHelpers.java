@@ -49,7 +49,8 @@ public class MessageHelpers {
     public static void sendPlayerStats(GuildMessageReceivedEvent event) {
         String playerName = "";
         if (event.getMessage().getContentRaw().startsWith("//me")) {
-            playerName = event.getMessage().getMember().getNickname();
+            String playerFullName = event.getMessage().getMember().getNickname();
+            playerName = concatPlayerName(playerFullName);
         }
         if (event.getMessage().getContentRaw().startsWith("//stats ")) {
             String contentRaw = event.getMessage().getContentRaw();
@@ -148,6 +149,15 @@ public class MessageHelpers {
         System.out.println(report.toString());
         stringBuilder.append(parseMapStatsToString(dataMapRequest, playerName));
         return stringBuilder;
+    }
+
+    private static String concatPlayerName(String name) {
+        name = name.replaceAll("\\)", "");
+        name = name.replaceAll("\\(.*", "");
+        if (name.contains(" ")) {
+            name = name.replaceAll("\\s+", "");
+        }
+        return name;
     }
 
 }
