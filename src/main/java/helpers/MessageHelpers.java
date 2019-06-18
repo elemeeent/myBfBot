@@ -9,10 +9,10 @@ import org.jetbrains.annotations.NotNull;
 import pojo.lastMaps.DataReportsRequest;
 import pojo.lastMaps.Report;
 import pojo.mapReport.DataMapRequest;
-import pojo.profileStats.DataStatsRequest;
+import pojo.profileStats.ProfileDataRequest;
 
 import static dataParser.JsonParseHelper.parseMapStatsToString;
-import static dataParser.JsonParseHelper.parsePlayerStatsToString;
+import static dataParser.JsonParseHelper.parsePlayerProfileStatsToString;
 import static requests.BattlefieldStatsRequest.*;
 
 @Slf4j
@@ -24,10 +24,8 @@ public class MessageHelpers {
             log.info("{} says hello.", author.getName());
             event
                     .getChannel()
-                    .sendMessage(
-                            "\nHello " + author.getName() +
-                                    "\nType '/help' for get command list..."
-                    )
+                    .sendMessage("\nHello " + author.getName() +
+                            "\nType `//help` for get command list...")
                     .queue();
         }
     }
@@ -38,49 +36,69 @@ public class MessageHelpers {
             log.info("{} requests help.", author.getName());
             event.
                     getChannel()
-                    .sendMessage(
-                            "\nCurrent commands:" +
-                                    "\n1) type '//stats %playerName%' to get his statistics" +
-                                    "\n2) type '//map %playerName%' to get his statistics at last maps" +
-                                    "\n3) type '//compare %playerName% %playerName' to compare 2 players (in develop)"
-                    )
+                    .sendMessage("\nCurrent commands:" +
+                            "\n1) type `//stats %playerName%` to get his statistics" +
+                            "\n2) type `//me` to get your profile stats" +
+                            "\n\nExamples: " +
+                            "\n`//stats i_am_prooo_tv`" +
+                            "\n`//me`")
                     .queue();
         }
     }
 
     public static void sendPlayerStats(GuildMessageReceivedEvent event) {
+        String playerName = "";
+        if (event.getMessage().getContentRaw().startsWith("//me")) {
+            playerName = event.getMessage().getMember().getNickname();
+        }
+        if (event.getMessage().getContentRaw().startsWith("//stats ")) {
+            String contentRaw = event.getMessage().getContentRaw();
+            String[] split = contentRaw.split("//stats ");
+            playerName = split[1];
+        }
         User author = event.getMessage().getAuthor();
-        String playerName = event.getMessage().getContentRaw().substring(7);
         log.info("{} requests stats for {}", author.getName(), playerName);
 
-        Response stats = getStats(playerName);
+        Response stats = getProfileStats(playerName);
 
         if (stats.getStatusCode() != HttpStatus.SC_OK) {
             Object path = stats.then().extract().path("errors.message");
-            event.getChannel().sendMessage("\nRequest error: " + path.toString()).queue();
+            event
+                    .getChannel()
+                    .sendMessage("\nRequest error: " + path.toString())
+                    .queue();
             return;
         }
 
         if (stats.getStatusCode() == HttpStatus.SC_OK) {
-            event.getChannel().sendMessage("\nPlayer '" + playerName + "' found. Gathering data").queue();
+            event
+                    .getChannel()
+                    .sendMessage("\nPlayer `" + playerName + "` found. Gathering data")
+                    .queue();
         }
 
         if (stats.getStatusCode() == HttpStatus.SC_OK) {
-            DataStatsRequest playerDataStats = stats.as(DataStatsRequest.class);
-            StringBuilder stringBuilder = parsePlayerStatsToString(playerDataStats);
-            event.getChannel().sendMessage("\nStats for " + playerName + "\n" + stringBuilder).queue();
+            ProfileDataRequest profileStats = stats.as(ProfileDataRequest.class);
+            StringBuilder stringBuilder = parsePlayerProfileStatsToString(profileStats);
+            String link = getBaseUrl() + playerName + "/overview?ref=discord";
+            event
+                    .getChannel()
+                    .sendMessage("\nStats for `" + playerName + "`\nFor more stats, visit:\n" + link + "\n" + stringBuilder)
+                    .queue();
         }
     }
 
     public static void sendPlayerLastMaps(GuildMessageReceivedEvent event) {
         User author = event.getMessage().getAuthor();
-        String playerName = event.getMessage().getContentRaw().substring(7);
+        String contentRaw = event.getMessage().getContentRaw();
+        String[] split = contentRaw.split("//map ");
+        String playerName = split[1];
         log.info("{} requests map stats for {}", author.getName(), playerName);
 
         Response lastGames = getLastGames(playerName);
 
         if (lastGames.getStatusCode() != HttpStatus.SC_OK) {
-            event.getChannel().sendMessage("\nError while request maps stats for player: " + playerName).queue();
+            event.getChannel().sendMessage("\nError while request maps stats for player: `" + playerName + "`").queue();
             return;
         }
 
@@ -103,14 +121,14 @@ public class MessageHelpers {
                 }
             }
 
-            event.getChannel().sendMessage("\nStats for " + playerName + "\n" + stringBuilder).queue();
+            event.getChannel().sendMessage("\nStats for `" + playerName + "`\n" + stringBuilder).queue();
         }
     }
 
     public static void sendError(GuildMessageReceivedEvent event) {
         if (!event.getMember().getUser().isBot()) {
             User author = event.getMessage().getAuthor();
-            log.info("{} says hello.", author.getName());
+            log.info("{} says something wrong.", author.getName());
             event
                     .getChannel()
                     .sendMessage(
@@ -130,28 +148,6 @@ public class MessageHelpers {
         System.out.println(report.toString());
         stringBuilder.append(parseMapStatsToString(dataMapRequest, playerName));
         return stringBuilder;
-    }
-
-    public static void main(String[] args) {
-        StringBuilder stringBuilder = null;
-        String playerName = "i_am_prooo_tv";
-        Response lastGames = getLastGames(playerName);
-
-        if (lastGames.getStatusCode() == HttpStatus.SC_OK) {
-            DataReportsRequest lastGamesData = lastGames.as(DataReportsRequest.class);
-            Report[] reports = lastGamesData.getData().getReports();
-
-            if (reports.length >= 2) {
-                for (int i = 0; i < 2; i++) {
-                    stringBuilder = playerLastMapsHandler(playerName, stringBuilder, reports[i]);
-                }
-            } else {
-                for (int i = 0; i < reports.length; i++) {
-                    stringBuilder = playerLastMapsHandler(playerName, stringBuilder, reports[i]);
-                }
-            }
-        }
-        System.out.println(stringBuilder);
     }
 
 }

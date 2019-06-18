@@ -1,4 +1,4 @@
-package pojo.mapReport;
+package pojo.simpleStats;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import pojo.simpleStats.statsNodes.Metadata;
 import pojo.simpleStats.statsNodes.Stat;
 
 @Getter
@@ -14,12 +13,8 @@ import pojo.simpleStats.statsNodes.Stat;
 @ToString
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class LastChildren {
+public class DataStats {
 
-    @JsonProperty("id")
-    private String id;
-    @JsonProperty("metadata")
-    private Metadata metadata;
     @JsonProperty("stats")
     private Stat[] stats;
 

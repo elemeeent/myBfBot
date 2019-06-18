@@ -18,15 +18,19 @@ public class FirstEvent extends ListenerAdapter {
             sendHelp(event);
             return;
         }
-        if (messageSent.matches("//stats \\w+")) {
+        if (messageSent.equalsIgnoreCase("//me")) {
             sendPlayerStats(event);
             return;
         }
-        if (messageSent.matches("//map \\w+")) {
+        if (messageSent.matches("//stats .*")) {
+            sendPlayerStats(event);
+            return;
+        }
+        if (messageSent.matches("//map .*")) {
             sendPlayerLastMaps(event);
             return;
         }
-        if (messageSent.matches("//\\w+")) {
+        if (messageSent.matches("//.*")) {
             sendError(event);
         }
     }

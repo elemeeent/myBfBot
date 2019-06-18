@@ -6,13 +6,14 @@ import static io.restassured.RestAssured.given;
 
 public class BattlefieldStatsRequest {
 
-    private static final String BASE_URL = "https://api.tracker.gg/api/v1/bfv/";
-    private static final String STATS_URL = BASE_URL + "standard/profile/origin/";
-    private static final String LAST_GAMES = BASE_URL + "gamereports/origin/latest/";
-    private static final String GAME_REPORT = BASE_URL + "gamereports/origin/direct/";
+    private static final String BASE_URL = "https://battlefieldtracker.com/bfv/profile/origin/";
+    private static final String BASE_API_URL = "https://api.tracker.gg/api/v1/bfv/";
+    private static final String PROFILE_URL = BASE_API_URL + "profile/origin/";
+    private static final String LAST_GAMES = BASE_API_URL + "gamereports/origin/latest/";
+    private static final String GAME_REPORT = BASE_API_URL + "gamereports/origin/direct/";
 
-    public static Response getStats(String name) {
-        return given().get(STATS_URL + name);
+    public static Response getProfileStats(String name) {
+        return given().get(PROFILE_URL + name);
     }
 
     public static Response getLastGames(String name) {
@@ -21,6 +22,10 @@ public class BattlefieldStatsRequest {
 
     public static Response getGameReport(String gameReportId) {
         return given().get(GAME_REPORT + gameReportId);
+    }
+
+    public static String getBaseUrl() {
+        return BASE_URL;
     }
 
 }

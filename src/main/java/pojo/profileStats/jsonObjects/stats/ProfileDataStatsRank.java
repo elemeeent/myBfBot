@@ -1,4 +1,4 @@
-package pojo.profileStats.statsNodes;
+package pojo.profileStats.jsonObjects.stats;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,11 +12,10 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Metadata {
+public class ProfileDataStatsRank {
 
-    @JsonProperty("key")
-    private String key;
-    @JsonProperty("name")
-    private String name;
-
+    @JsonProperty("displayName")
+    private String displayName;
+    @JsonProperty("displayValue")
+    private String displayValue;
 }
