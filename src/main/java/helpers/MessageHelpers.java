@@ -50,6 +50,9 @@ public class MessageHelpers {
         String playerName = "";
         if (event.getMessage().getContentRaw().startsWith("//me")) {
             String playerFullName = event.getMessage().getMember().getNickname();
+            if (playerFullName == null) {
+                playerFullName = event.getMessage().getAuthor().getName();
+            }
             playerName = concatPlayerName(playerFullName);
         }
         if (event.getMessage().getContentRaw().startsWith("//stats ")) {
