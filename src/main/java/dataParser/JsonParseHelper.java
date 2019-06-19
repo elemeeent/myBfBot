@@ -8,6 +8,11 @@ import pojo.profileStats.ProfileDataRequest;
 import pojo.profileStats.jsonObjects.stats.ProfileDataStats;
 import pojo.simpleStats.statsNodes.Stat;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
 @Slf4j
 public class JsonParseHelper {
 
@@ -27,44 +32,50 @@ public class JsonParseHelper {
         return getDataFromStats(data, sb);
     }
 
-    private static StringBuilder getDataFromStats(ProfileDataRequest dataRequest, StringBuilder stringBuilder) {
-
+    public static StringBuilder getDataFromStats(ProfileDataRequest dataRequest, StringBuilder stringBuilder) {
         ProfileDataStats stats = dataRequest.getData().getStats();
-        String tab = "\t";
-        return stringBuilder
-                .append(stats.getProfileDataStatsScorePerMinute().getDisplayName())
-                .append(": " + tab + tab + tab)
-                .append(stats.getProfileDataStatsScorePerMinute().getDisplayValue())
-                .append("\n")
-                .append(stats.getProfileDataStatsKdRatio().getDisplayName())
-                .append(": " + tab + tab + tab + tab + tab + tab)
-                .append(stats.getProfileDataStatsKdRatio().getDisplayValue())
-                .append("\n")
-                .append(stats.getProfileDataStatsKills().getDisplayName())
-                .append(": " + tab + tab + tab + tab + tab + tab)
-                .append(stats.getProfileDataStatsKills().getDisplayValue())
-                .append("\n")
-                .append(stats.getProfileDataStatsShotsAccuracy().getDisplayName())
-                .append(":" + tab)
-                .append(stats.getProfileDataStatsShotsAccuracy().getDisplayValue())
-                .append("\n")
-                .append(stats.getProfileDataStatsKillsPerMinute().getDisplayName())
-                .append(":" + tab + tab + tab + tab)
-                .append(stats.getProfileDataStatsKillsPerMinute().getDisplayValue())
-                .append("\n")
-                .append(stats.getProfileDataStatsRank().getDisplayName())
-                .append(":" + tab + tab + tab + tab + tab + tab)
-                .append(stats.getProfileDataStatsRank().getDisplayValue())
-                .append("\n")
-                .append(stats.getProfileDataStatsTimePlayed().getDisplayName())
-                .append(":  " + tab + tab)
-                .append(stats.getProfileDataStatsTimePlayed().getDisplayValue())
-                .append("\n")
-                .append(stats.getProfileDataStatsScoreTanks().getDisplayName())
-                .append(":  " + tab + tab)
-                .append(stats.getProfileDataStatsScoreTanks().getDisplayValue())
-                .append("\n");
+        List<Object> statsObjects = new ArrayList<>();
+        stringBuilder.append("```");
+        stringBuilder.append(String.format("| %-16s | %-13s\n", "Stats name", "Stats value"));
 
+        Method[] statsMethods = stats.getClass().getMethods();
+        for (Method statMethod : statsMethods) {
+            if (statMethod.getName().matches("getProfileDataStats\\w+")) {
+                try {
+                    statsObjects.add(statMethod.invoke(stats));
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        for (Object statsObject : statsObjects) {
+            ArrayList<String> nameList = new ArrayList<>();
+            ArrayList<String> valueList = new ArrayList<>();
+            for (Method method : statsObject.getClass().getMethods()) {
+                if (method.getName().matches("getDisplayName") || method.getName().matches("getDisplayValue")) {
+                    if (method.getName().matches("getDisplayName")) {
+                        try {
+                            nameList.add(method.invoke(statsObject).toString());
+                        } catch (IllegalAccessException | InvocationTargetException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (method.getName().matches("getDisplayValue")) {
+                        try {
+                            valueList.add(method.invoke(statsObject).toString());
+                        } catch (IllegalAccessException | InvocationTargetException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+            for (int i = 0; i < nameList.size(); i++) {
+                stringBuilder.append(String.format("| %-16s | %-13s\n", nameList.get(i), valueList.get(i)));
+            }
+        }
+        stringBuilder.append("```");
+        return stringBuilder;
     }
 
     public static StringBuilder parseMapStatsToString(DataMapRequest data, String playerName) {
