@@ -88,13 +88,16 @@ public class MessageHelpers {
             StringBuilder stringBuilder = parsePlayerProfileStatsToString(profileStats);
             String link = getBaseUrl() + playerName + "/overview?ref=discord";
 
-            EmbedBuilder embedBuilder = new EmbedBuilder();
-            embedBuilder.setTitle("\nStats for `" + playerName + "`\n");
-            embedBuilder.setDescription("For more stats, visit:\n" + link);
-
+            // disabled cuz of permissions (i suppose)
+//            EmbedBuilder embedBuilder = new EmbedBuilder();
+//            embedBuilder.setTitle("\nStats for `" + playerName + "`\n");
+//            embedBuilder.setDescription("For more stats, visit:\n" + link);
+//
             MessageBuilder builder = new MessageBuilder();
-            builder.setEmbed(embedBuilder.build());
+//            builder.setEmbed(embedBuilder.build());
+            builder.append("\nStats for `" + playerName + "`\n");
             builder.append("\n" + stringBuilder);
+            builder.append("\nFor more stats, visit:\n" + link);
 
             event
                     .getChannel()
