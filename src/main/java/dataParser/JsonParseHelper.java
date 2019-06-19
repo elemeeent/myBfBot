@@ -35,9 +35,9 @@ public class JsonParseHelper {
     public static StringBuilder getDataFromStats(ProfileDataRequest dataRequest, StringBuilder stringBuilder) {
         ProfileDataStats stats = dataRequest.getData().getStats();
         List<Object> statsObjects = new ArrayList<>();
-        stringBuilder.append("```css");
+        stringBuilder.append("```");
         stringBuilder.append(String.format("| %-16s | %-13s |\n", "Stats name", "Stats value"));
-        stringBuilder.append("|=================================|");
+        stringBuilder.append("|==================================|\n");
 
         Method[] statsMethods = stats.getClass().getMethods();
         for (Method statMethod : statsMethods) {
@@ -72,7 +72,7 @@ public class JsonParseHelper {
                 }
             }
             for (int i = 0; i < nameList.size(); i++) {
-                stringBuilder.append(String.format("| %-16s | %-13s\n", nameList.get(i), valueList.get(i)));
+                stringBuilder.append(String.format("| %-16s | %-13s |\n", nameList.get(i), valueList.get(i)));
             }
         }
         stringBuilder.append("```");

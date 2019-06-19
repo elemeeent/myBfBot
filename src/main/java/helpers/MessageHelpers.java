@@ -2,6 +2,8 @@ package helpers;
 
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.apache.http.HttpStatus;
@@ -85,9 +87,18 @@ public class MessageHelpers {
             ProfileDataRequest profileStats = stats.as(ProfileDataRequest.class);
             StringBuilder stringBuilder = parsePlayerProfileStatsToString(profileStats);
             String link = getBaseUrl() + playerName + "/overview?ref=discord";
+
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+            embedBuilder.setTitle("\nStats for `" + playerName + "`\n");
+            embedBuilder.setDescription("For more stats, visit:\n" + link);
+
+            MessageBuilder builder = new MessageBuilder();
+            builder.setEmbed(embedBuilder.build());
+            builder.append("\n" + stringBuilder);
+
             event
                     .getChannel()
-                    .sendMessage("\nStats for `" + playerName + "`\nFor more stats, visit:\n" + link + "\n" + stringBuilder)
+                    .sendMessage(builder.build())
                     .queue();
         }
     }
