@@ -66,23 +66,22 @@ public class MessageHelper {
 
         Response stats = getProfileStats(playerName);
 
-        if (stats.getStatusCode() != HttpStatus.SC_OK) {
-            Object path = stats.then().extract().path("errors.message");
+        if (stats.then().extract().path("status").equals("NotFound")) {
             event
                     .getChannel()
-                    .sendMessage("\nRequest error: " + path.toString())
+                    .sendMessage("Player `" + playerName + "` not found")
                     .queue();
             return;
         }
 
-        if (stats.getStatusCode() == HttpStatus.SC_OK) {
+        if (stats.then().extract().path("status").equals("Success")) {
             event
                     .getChannel()
                     .sendMessage("\nPlayer `" + playerName + "` found. Gathering data")
                     .queue();
         }
 
-        if (stats.getStatusCode() == HttpStatus.SC_OK) {
+        if (stats.then().extract().path("status").equals("Success")) {
             ProfileDataRequest profileStats = stats.as(ProfileDataRequest.class);
             StringBuilder stringBuilder = mergeAllData(profileStats);
             String link = getBaseUrl() + playerName + "/overview?ref=discord";
