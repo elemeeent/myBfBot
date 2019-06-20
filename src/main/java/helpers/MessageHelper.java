@@ -2,7 +2,6 @@ package helpers;
 
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
@@ -13,12 +12,12 @@ import pojo.lastMaps.Report;
 import pojo.mapReport.DataMapRequest;
 import pojo.profileStats.ProfileDataRequest;
 
+import static dataParser.JsonParseHelper.mergeAllData;
 import static dataParser.JsonParseHelper.parseMapStatsToString;
-import static dataParser.JsonParseHelper.parsePlayerProfileStatsToString;
 import static requests.BattlefieldStatsRequest.*;
 
 @Slf4j
-public class MessageHelpers {
+public class MessageHelper {
 
     public static void sendHello(GuildMessageReceivedEvent event) {
         if (!event.getMember().getUser().isBot()) {
@@ -55,7 +54,7 @@ public class MessageHelpers {
             if (playerFullName == null) {
                 playerFullName = event.getMessage().getAuthor().getName();
             }
-            playerName = concatPlayerName(playerFullName);
+            playerName = DataHandlerHelper.concatPlayerName(playerFullName);
         }
         if (event.getMessage().getContentRaw().startsWith("//stats ")) {
             String contentRaw = event.getMessage().getContentRaw();
@@ -85,7 +84,7 @@ public class MessageHelpers {
 
         if (stats.getStatusCode() == HttpStatus.SC_OK) {
             ProfileDataRequest profileStats = stats.as(ProfileDataRequest.class);
-            StringBuilder stringBuilder = parsePlayerProfileStatsToString(profileStats);
+            StringBuilder stringBuilder = mergeAllData(profileStats);
             String link = getBaseUrl() + playerName + "/overview?ref=discord";
 
             // disabled cuz of permissions (i suppose)
@@ -166,17 +165,6 @@ public class MessageHelpers {
         System.out.println(report.toString());
         stringBuilder.append(parseMapStatsToString(dataMapRequest, playerName));
         return stringBuilder;
-    }
-
-    private static String concatPlayerName(String name) {
-        log.info("Concat player: {}", name);
-        name = name.replaceAll("\\)", "");
-        name = name.replaceAll("\\(.*", "");
-        if (name.contains(" ")) {
-            name = name.replaceAll("\\s+", "");
-        }
-        log.info("Final name: {}", name);
-        return name;
     }
 
 }

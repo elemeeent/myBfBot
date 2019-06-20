@@ -16,8 +16,8 @@ public class ProfileDataClasses {
 
     @JsonProperty("class")
     private String className;
-    @JsonProperty("kdRatio")
-    private ProfileDataClassesKdRatio profileDataClassesKdRatio;
+    //    @JsonProperty("kdRatio")
+//    private ProfileDataClassesKdRatio profileDataClassesKdRatio;
     @JsonProperty("score")
     private ProfileDataClassesScore profileDataClassesScore;
 }

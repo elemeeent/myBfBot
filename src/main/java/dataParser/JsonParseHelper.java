@@ -5,6 +5,7 @@ import pojo.mapReport.DataMapRequest;
 import pojo.mapReport.LastChildren;
 import pojo.mapReport.MainChildren;
 import pojo.profileStats.ProfileDataRequest;
+import pojo.profileStats.jsonObjects.classes.ProfileDataClasses;
 import pojo.profileStats.jsonObjects.stats.ProfileDataStats;
 import pojo.simpleStats.statsNodes.Stat;
 
@@ -22,20 +23,38 @@ public class JsonParseHelper {
             "killsPerMinute"
     };
 
-    public static StringBuilder parsePlayerProfileStatsToString(ProfileDataRequest data) {
-        StringBuilder sb = new StringBuilder();
-
-        if (data == null || data.getData() == null) {
-            return null;
-        }
-
-        return getDataFromStats(data, sb);
+    public static StringBuilder mergeAllData(ProfileDataRequest dataRequest) {
+        StringBuilder playerFullStats = new StringBuilder();
+        playerFullStats.append("```");
+        getDataFromStats(dataRequest, playerFullStats);
+        playerFullStats.append("|==================================|\n");
+        getDataFromClasses(dataRequest, playerFullStats);
+        playerFullStats.append("|==================================|\n");
+        playerFullStats.append("```");
+        return playerFullStats;
     }
 
-    public static StringBuilder getDataFromStats(ProfileDataRequest dataRequest, StringBuilder stringBuilder) {
+    private static StringBuilder getDataFromClasses(ProfileDataRequest dataRequest, StringBuilder stringBuilder) {
+        ProfileDataClasses[] classes = dataRequest.getData().getClasses();
+        stringBuilder.append(String.format("| %-16s | %-13s |\n", "Class name", "Class score"));
+        stringBuilder.append("|==================================|\n");
+
+        for (ProfileDataClasses aClass : classes) {
+            String className = aClass.getClassName();
+            if (className.equals("pilot")) {
+                continue;
+            }
+            String displayName = aClass.getProfileDataClassesScore().getDisplayValue();
+            stringBuilder.append(String.format("| %-16s | %-13s |\n", className, displayName));
+        }
+
+        return stringBuilder;
+
+    }
+
+    private static StringBuilder getDataFromStats(ProfileDataRequest dataRequest, StringBuilder stringBuilder) {
         ProfileDataStats stats = dataRequest.getData().getStats();
         List<Object> statsObjects = new ArrayList<>();
-        stringBuilder.append("```");
         stringBuilder.append(String.format("| %-16s | %-13s |\n", "Stats name", "Stats value"));
         stringBuilder.append("|==================================|\n");
 
@@ -75,7 +94,6 @@ public class JsonParseHelper {
                 stringBuilder.append(String.format("| %-16s | %-13s |\n", nameList.get(i), valueList.get(i)));
             }
         }
-        stringBuilder.append("```");
         return stringBuilder;
     }
 

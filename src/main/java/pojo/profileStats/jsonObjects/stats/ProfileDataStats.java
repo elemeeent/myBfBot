@@ -28,8 +28,10 @@ public class ProfileDataStats {
     private ProfileDataStatsRank profileDataStatsRank;
     @JsonProperty("timePlayed")
     private ProfileDataStatsTimePlayed profileDataStatsTimePlayed;
-    @JsonProperty("scoreTanks")
-    private ProfileDataStatsScoreTanks profileDataStatsScoreTanks;
+    @JsonProperty("wlPercentage")
+    private ProfileDataStatsWlPercentage profileDataStatswlPercentage;
+//    @JsonProperty("scoreTanks")
+//    private ProfileDataStatsScoreTanks profileDataStatsScoreTanks;
 
 
 }
