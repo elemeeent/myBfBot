@@ -14,6 +14,7 @@ import pojo.profileStats.ProfileDataRequest;
 
 import static dataParser.JsonParseHelper.mergeAllData;
 import static dataParser.JsonParseHelper.parseMapStatsToString;
+import static helpers.DataHandlerHelper.getAuthorNickname;
 import static requests.BattlefieldStatsRequest.*;
 
 @Slf4j
@@ -21,11 +22,11 @@ public class MessageHelper {
 
     public static void sendHello(GuildMessageReceivedEvent event) {
         if (!event.getMember().getUser().isBot()) {
-            User author = event.getMessage().getAuthor();
-            log.info("{} says hello.", author.getName());
+            String nickname = getAuthorNickname(event);
+            log.info("{} says hello.", nickname);
             event
                     .getChannel()
-                    .sendMessage("\nHello " + author.getName() +
+                    .sendMessage("\nHello " + nickname +
                             "\nType `//help` for get command list...")
                     .queue();
         }
@@ -33,8 +34,8 @@ public class MessageHelper {
 
     public static void sendHelp(GuildMessageReceivedEvent event) {
         if (!event.getMember().getUser().isBot()) {
-            User author = event.getMessage().getAuthor();
-            log.info("{} requests help.", author.getName());
+            String nickname = getAuthorNickname(event);
+            log.info("{} requests help.", nickname);
             event.
                     getChannel()
                     .sendMessage("\nCurrent commands:" +
@@ -50,10 +51,7 @@ public class MessageHelper {
     public static void sendPlayerStats(GuildMessageReceivedEvent event) {
         String playerName = "";
         if (event.getMessage().getContentRaw().startsWith("//me")) {
-            String playerFullName = event.getMessage().getMember().getNickname();
-            if (playerFullName == null) {
-                playerFullName = event.getMessage().getAuthor().getName();
-            }
+            String playerFullName = getAuthorNickname(event);
             playerName = DataHandlerHelper.concatPlayerName(playerFullName);
         }
         if (event.getMessage().getContentRaw().startsWith("//stats ")) {
@@ -105,11 +103,11 @@ public class MessageHelper {
     }
 
     public static void sendPlayerLastMaps(GuildMessageReceivedEvent event) {
-        User author = event.getMessage().getAuthor();
+        String nickname = getAuthorNickname(event);
         String contentRaw = event.getMessage().getContentRaw();
         String[] split = contentRaw.split("//map ");
         String playerName = split[1];
-        log.info("{} requests map stats for {}", author.getName(), playerName);
+        log.info("{} requests map stats for {}", nickname, playerName);
 
         Response lastGames = getLastGames(playerName);
 
