@@ -2,14 +2,12 @@ package pojo.profileStats.jsonObjects;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import pojo.profileStats.jsonObjects.classes.ProfileDataClasses;
 import pojo.profileStats.jsonObjects.stats.ProfileDataStats;
 
-@Getter
 @Setter
 @ToString
 @NoArgsConstructor
@@ -20,4 +18,12 @@ public class ProfileData {
     private ProfileDataStats stats;
     @JsonProperty("classes")
     private ProfileDataClasses[] classes;
+
+    public ProfileDataStats getStats() {
+        return stats;
+    }
+
+    public ProfileDataClasses[] getClasses() {
+        return classes;
+    }
 }

@@ -2,13 +2,9 @@ package pojo.profileStats.jsonObjects.stats;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
-@Getter
-@Setter
 @ToString
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -34,4 +30,35 @@ public class ProfileDataStats {
 //    private ProfileDataStatsScoreTanks profileDataStatsScoreTanks;
 
 
+    public ProfileDataStatsScorePerMinute getProfileDataStatsScorePerMinute() {
+        return profileDataStatsScorePerMinute;
+    }
+
+    public ProfileDataStatsKdRatio getProfileDataStatsKdRatio() {
+        return profileDataStatsKdRatio;
+    }
+
+    public ProfileDataStatsKills getProfileDataStatsKills() {
+        return profileDataStatsKills;
+    }
+
+    public ProfileDataStatsShotsAccuracy getProfileDataStatsShotsAccuracy() {
+        return profileDataStatsShotsAccuracy;
+    }
+
+    public ProfileDataStatsKillsPerMinute getProfileDataStatsKillsPerMinute() {
+        return profileDataStatsKillsPerMinute;
+    }
+
+    public ProfileDataStatsRank getProfileDataStatsRank() {
+        return profileDataStatsRank;
+    }
+
+    public ProfileDataStatsTimePlayed getProfileDataStatsTimePlayed() {
+        return profileDataStatsTimePlayed;
+    }
+
+    public ProfileDataStatsWlPercentage getProfileDataStatswlPercentage() {
+        return profileDataStatswlPercentage;
+    }
 }

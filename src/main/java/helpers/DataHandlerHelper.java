@@ -25,4 +25,24 @@ public class DataHandlerHelper {
         return playerFullName;
     }
 
+    public static String[] playerNamesSeparator(String s) {
+        String[] playerNames = {};
+
+        if (!s.matches("\\/\\/compare .*[^ ]")) {
+            return null;
+        } else {
+            String[] split = s.split("//compare ");
+            if (split.length < 2) {
+                return null;
+            } else {
+                String[] finalSplit = split[1].split("\\s+");
+                if (finalSplit.length < 2) {
+                    return null;
+                }
+                playerNames = finalSplit;
+            }
+        }
+        return playerNames;
+    }
+
 }

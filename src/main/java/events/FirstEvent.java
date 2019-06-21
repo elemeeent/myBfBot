@@ -30,6 +30,10 @@ public class FirstEvent extends ListenerAdapter {
             sendPlayerLastMaps(event);
             return;
         }
+        if (messageSent.matches("//compare .*")) {
+            sendPlayersCompareStats(event);
+            return;
+        }
         if (messageSent.matches("//.*")) {
             sendError(event);
         }

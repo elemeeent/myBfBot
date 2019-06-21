@@ -2,13 +2,11 @@ package pojo.profileStats;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import pojo.profileStats.jsonObjects.ProfileData;
 
-@Getter
 @Setter
 @ToString
 @NoArgsConstructor
@@ -17,5 +15,14 @@ public class ProfileDataRequest {
 
     @JsonProperty("data")
     private ProfileData data;
+    @JsonProperty("platformUserIdentifier")
+    private String platformUserIdentifier;
 
+    public ProfileData getData() {
+        return data;
+    }
+
+    public String getPlatformUserIdentifier() {
+        return platformUserIdentifier;
+    }
 }
