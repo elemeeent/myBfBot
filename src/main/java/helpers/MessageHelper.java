@@ -42,7 +42,7 @@ public class MessageHelper {
                     .sendMessage("\nCurrent commands:" +
                             "\n1) type `//stats %playerName%` to get his statistics" +
                             "\n2) type `//me` to get your profile stats" +
-                            "\n3) type `//compare` to compare 2 players" +
+                            "\n3) type `//compare %playerName% %playerName%` to compare 2 players" +
                             "\n\nExamples: " +
                             "\n`//stats i_am_prooo_tv`" +
                             "\n`//me`" +

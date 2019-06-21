@@ -160,7 +160,7 @@ public class JsonParseHelper {
         int nameWidth = firstPlayer.getPlatformUserIdentifier().length() + secondPlayer.getPlatformUserIdentifier().length();
         int fullWidth = 50 - nameWidth;
 
-        stringBuilder.append(String.format(" %-" + fullWidth + "s \n", " Compare " + firstPlayer.getPlatformUserIdentifier() + " to " + secondPlayer.getPlatformUserIdentifier()));
+        stringBuilder.append(String.format(" %-" + fullWidth + "s\n", "Compare " + firstPlayer.getPlatformUserIdentifier() + " to " + secondPlayer.getPlatformUserIdentifier()));
         stringBuilder.append(String.format("| %-14s | %-11s | %-1s | %-11s |\n", "Stats name", "Stats value", "", "Stats value"));
         stringBuilder.append("|================================================|\n");
 
