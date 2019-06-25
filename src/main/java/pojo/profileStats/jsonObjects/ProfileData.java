@@ -32,6 +32,36 @@ public class ProfileData {
         return classes;
     }
 
+    public static StringBuilder handleAndGetTopWeapons(Map<String, List<String>> weaponsMap, StringBuilder stringBuilder) {
+        Iterator<Map.Entry<String, List<String>>> iterator = weaponsMap.entrySet().iterator();
+        stringBuilder.append(String.format("| %-16s | %-13s |\n", "Weapon name", "Weapon stats"));
+        stringBuilder.append("|==================================|\n");
+        while (iterator.hasNext()) {
+            Map.Entry pairs = iterator.next();
+            String weaponName = pairs.getKey().toString();
+
+            if (weaponName.matches("wtype\\w+")) {
+                weaponName = weaponName.replaceAll("wtype", "");
+            }
+            if (weaponName.matches("wtyp\\w+")) {
+                weaponName = weaponName.replaceAll("wtyp", "");
+            }
+            if (weaponName.matches("gct\\w+")) {
+                weaponName = weaponName.replaceAll("gct", "");
+            }
+
+            String value = pairs.getValue().toString();
+            if (value.matches(".*, .*")) {
+                String substring = value.substring(1, value.length() - 1);
+                String[] split = substring.split(", ");
+                stringBuilder.append(String.format("| %-16s | %-13s |\n", weaponName, "kills: " + split[0]));
+                stringBuilder.append(String.format("| %-16s | %-13s |\n", "________________", "acc.: " + split[1] + "%"));
+                continue;
+            }
+        }
+        return stringBuilder;
+    }
+
     public static Map<String, List<String>> getTopWeapons(ProfileDataWeapons[] profileDataWeapons) {
 
         if (profileDataWeapons == null) {
@@ -60,32 +90,6 @@ public class ProfileData {
             }
         }
         return topWeapons;
-    }
-
-    public static StringBuilder handleAndGetTopWeapons(Map<String, List<String>> weaponsMap, StringBuilder stringBuilder) {
-        Iterator<Map.Entry<String, List<String>>> iterator = weaponsMap.entrySet().iterator();
-        stringBuilder.append(String.format("| %-16s | %-13s |\n", "Weapon name", "Weapon stats"));
-        stringBuilder.append("|==================================|\n");
-        while (iterator.hasNext()) {
-            Map.Entry pairs = iterator.next();
-            String s = pairs.getKey().toString();
-            String[] wtypes;
-            if (s.matches("wtype\\w+")) {
-                wtypes = s.split("wtype");
-                String value = pairs.getValue().toString();
-                if (value.matches(".*, .*")) {
-                    String substring = value.substring(1, value.length() - 1);
-                    String[] split = substring.split(", ");
-                    stringBuilder.append(String.format("| %-16s | %-13s |\n", wtypes[1], "kills: " + split[0]));
-                    stringBuilder.append(String.format("| %-16s | %-13s |\n", "________________", "acc.: " + split[1] + "%"));
-                    continue;
-                }
-                stringBuilder.append(wtypes[1] + ": " + value + "\n");
-            } else {
-                stringBuilder.append(s + ": " + pairs.getValue() + "\n");
-            }
-        }
-        return stringBuilder;
     }
 
     public ProfileDataWeapons[] getWeapons() {
