@@ -4,7 +4,9 @@ import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
 import org.apache.http.HttpStatus;
 import org.jetbrains.annotations.NotNull;
 import pojo.lastMaps.DataReportsRequest;
@@ -21,12 +23,25 @@ import static requests.BattlefieldStatsRequest.*;
 @Slf4j
 public class MessageHelper {
 
+    public static void ignorePrivate(PrivateMessageReceivedEvent event) {
+        if (!isBot(event)) {
+            log.warn("Someone spams bot: {}", event.getMessage().getAuthor().getName());
+            event.getChannel()
+                    .sendMessage("I'm not allowed to answer you")
+                    .queue();
+
+        }
+    }
+
+    public static void sendReady(ReadyEvent event) {
+        log.info("I'm running at {} servers", event.getGuildAvailableCount());
+    }
+
     public static void sendHello(GuildMessageReceivedEvent event) {
         if (!isBot(event)) {
             String nickname = getAuthorNickname(event);
             log.info("{} says hello.", nickname);
-            event
-                    .getChannel()
+            event.getChannel()
                     .sendMessage("\nHello " + nickname +
                             "\nType `//help` for get command list...")
                     .queue();
@@ -37,8 +52,7 @@ public class MessageHelper {
         if (!isBot(event)) {
             String nickname = getAuthorNickname(event);
             log.info("{} requests help.", nickname);
-            event.
-                    getChannel()
+            event.getChannel()
                     .sendMessage("\nCurrent commands:" +
                             "\n1) type `//stats %playerName%` to get his statistics" +
                             "\n2) type `//me` to get your profile stats" +
@@ -69,16 +83,14 @@ public class MessageHelper {
             Response stats = getProfileStats(playerName);
 
             if (stats.then().extract().path("status").equals("NotFound")) {
-                event
-                        .getChannel()
+                event.getChannel()
                         .sendMessage("Player `" + playerName + "` not found")
                         .queue();
                 return;
             }
 
             if (stats.then().extract().path("status").equals("Success")) {
-                event
-                        .getChannel()
+                event.getChannel()
                         .sendMessage("\nPlayer `" + playerName + "` found. Gathering data")
                         .queue();
             }
@@ -99,8 +111,7 @@ public class MessageHelper {
                 builder.append("\n" + stringBuilder);
                 builder.append("\nFor more stats, visit:\n" + link);
 
-                event
-                        .getChannel()
+                event.getChannel()
                         .sendMessage(builder.build())
                         .queue();
             }

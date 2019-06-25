@@ -7,12 +7,17 @@ import pojo.mapReport.MainChildren;
 import pojo.profileStats.ProfileDataRequest;
 import pojo.profileStats.jsonObjects.classes.ProfileDataClasses;
 import pojo.profileStats.jsonObjects.stats.ProfileDataStats;
+import pojo.profileStats.jsonObjects.weapons.ProfileDataWeapons;
 import pojo.simpleStats.statsNodes.Stat;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import static pojo.profileStats.jsonObjects.ProfileData.getTopWeapons;
+import static pojo.profileStats.jsonObjects.ProfileData.handleAndGetTopWeapons;
 
 @Slf4j
 public class JsonParseHelper {
@@ -30,26 +35,10 @@ public class JsonParseHelper {
         playerFullStats.append("|==================================|\n");
         getDataFromClasses(dataRequest, playerFullStats);
         playerFullStats.append("|==================================|\n");
+        getDataFromWeapons(dataRequest, playerFullStats);
+        playerFullStats.append("|==================================|\n");
         playerFullStats.append("```");
         return playerFullStats;
-    }
-
-    private static StringBuilder getDataFromClasses(ProfileDataRequest dataRequest, StringBuilder stringBuilder) {
-        ProfileDataClasses[] classes = dataRequest.getData().getClasses();
-        stringBuilder.append(String.format("| %-16s | %-13s |\n", "Class name", "Class score"));
-        stringBuilder.append("|==================================|\n");
-
-        for (ProfileDataClasses aClass : classes) {
-            String className = aClass.getClassName();
-            if (className.equals("pilot")) {
-                continue;
-            }
-            String displayName = aClass.getProfileDataClassesScore().getDisplayValue();
-            stringBuilder.append(String.format("| %-16s | %-13s |\n", className, displayName));
-        }
-
-        return stringBuilder;
-
     }
 
     private static StringBuilder getDataFromStats(ProfileDataRequest dataRequest, StringBuilder stringBuilder) {
@@ -94,6 +83,30 @@ public class JsonParseHelper {
                 stringBuilder.append(String.format("| %-16s | %-13s |\n", nameList.get(i), valueList.get(i)));
             }
         }
+        return stringBuilder;
+    }
+
+    private static StringBuilder getDataFromClasses(ProfileDataRequest dataRequest, StringBuilder stringBuilder) {
+        ProfileDataClasses[] classes = dataRequest.getData().getClasses();
+        stringBuilder.append(String.format("| %-16s | %-13s |\n", "Class name", "Class score"));
+        stringBuilder.append("|==================================|\n");
+
+        for (ProfileDataClasses aClass : classes) {
+            String className = aClass.getClassName();
+            if (className.equals("pilot")) {
+                continue;
+            }
+            String displayName = aClass.getProfileDataClassesScore().getDisplayValue();
+            stringBuilder.append(String.format("| %-16s | %-13s |\n", className, displayName));
+        }
+
+        return stringBuilder;
+    }
+
+    private static StringBuilder getDataFromWeapons(ProfileDataRequest dataRequest, StringBuilder stringBuilder) {
+        ProfileDataWeapons[] weapons = dataRequest.getData().getWeapons();
+        Map<String, List<String>> topWeapons = getTopWeapons(weapons);
+        handleAndGetTopWeapons(topWeapons, stringBuilder);
         return stringBuilder;
     }
 
