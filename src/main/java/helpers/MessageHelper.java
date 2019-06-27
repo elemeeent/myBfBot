@@ -25,7 +25,7 @@ public class MessageHelper {
 
     public static void ignorePrivate(PrivateMessageReceivedEvent event) {
         if (!isBot(event)) {
-            log.warn("Someone spams bot: {}", event.getMessage().getAuthor().getName());
+            log.warn("Someone spams bot: '{}'", event.getMessage().getAuthor().getName());
             event.getChannel()
                     .sendMessage("I'm not allowed to answer you")
                     .queue();
@@ -40,7 +40,7 @@ public class MessageHelper {
     public static void sendHello(GuildMessageReceivedEvent event) {
         if (!isBot(event)) {
             String nickname = getAuthorNickname(event);
-            log.info("{} says hello.", nickname);
+            log.info("'{}' says hello.", nickname);
             event.getChannel()
                     .sendMessage("\nHello " + nickname +
                             "\nType `//help` for get command list...")
@@ -51,7 +51,7 @@ public class MessageHelper {
     public static void sendHelp(GuildMessageReceivedEvent event) {
         if (!isBot(event)) {
             String nickname = getAuthorNickname(event);
-            log.info("{} requests help.", nickname);
+            log.info("'{}' requests help.", nickname);
             event.getChannel()
                     .sendMessage("\nCurrent commands:" +
                             "\n1) type `//stats %playerName%` to get his statistics" +
@@ -78,43 +78,35 @@ public class MessageHelper {
                 playerName = split[1];
             }
             User author = event.getMessage().getAuthor();
-            log.info("{} requests stats for {}", author.getName(), playerName);
+            log.info("'{}' requests stats for '{}'", author.getName(), playerName);
 
             Response stats = getProfileStats(playerName);
+            String status = stats.then().extract().path("status").toString();
 
-            if (stats.then().extract().path("status").equals("NotFound")) {
-                event.getChannel()
-                        .sendMessage("Player `" + playerName + "` not found")
-                        .queue();
-                return;
-            }
+            if (checkStatus(event, playerName, status)) return;
 
-            if (stats.then().extract().path("status").equals("Success")) {
-                event.getChannel()
-                        .sendMessage("\nPlayer `" + playerName + "` found. Gathering data")
-                        .queue();
-            }
+            event.getChannel()
+                    .sendMessage("\nPlayer `" + playerName + "` found. Gathering data")
+                    .queue();
 
-            if (stats.then().extract().path("status").equals("Success")) {
-                ProfileDataRequest profileStats = stats.as(ProfileDataRequest.class);
-                StringBuilder stringBuilder = getAndMergePlayerData(profileStats);
-                String link = getBaseUrl() + playerName + "/overview?ref=discord";
+            ProfileDataRequest profileStats = stats.as(ProfileDataRequest.class);
+            StringBuilder stringBuilder = getAndMergePlayerData(profileStats);
+            String link = getBaseUrl() + playerName + "/overview?ref=discord";
 
-                // disabled cuz of permissions (i suppose)
+            // disabled cuz of permissions (i suppose)
 //            EmbedBuilder embedBuilder = new EmbedBuilder();
 //            embedBuilder.setTitle("\nStats for `" + playerName + "`\n");
 //            embedBuilder.setDescription("For more stats, visit:\n" + link);
 //
-                MessageBuilder builder = new MessageBuilder();
+            MessageBuilder builder = new MessageBuilder();
 //            builder.setEmbed(embedBuilder.build());
-                builder.append("\nStats for `" + playerName + "`\n");
-                builder.append("\n" + stringBuilder);
-                builder.append("\nFor more stats, visit:\n" + link);
+            builder.append("\nStats for `" + playerName + "`\n");
+            builder.append("\n" + stringBuilder);
+            builder.append("\nFor more stats, visit:\n" + link);
 
-                event.getChannel()
-                        .sendMessage(builder.build())
-                        .queue();
-            }
+            event.getChannel()
+                    .sendMessage(builder.build())
+                    .queue();
         }
     }
 
@@ -130,69 +122,66 @@ public class MessageHelper {
                 secondPlayerName = strings[1];
             }
 
-            log.info("{} requests stats for {} and {}", authorNickname, firstPlayerName, secondPlayerName);
+            log.info("'{}' requests stats for '{}' and '{}'", authorNickname, firstPlayerName, secondPlayerName);
 
             Response fPStats = getProfileStats(firstPlayerName);
             Response sPStats = getProfileStats(secondPlayerName);
 
             String firstRequestStatus = fPStats.then().extract().path("status").toString();
             String secondRequestStatus = sPStats.then().extract().path("status").toString();
-            if (firstRequestStatus.equals("NotFound")) {
-                event
-                        .getChannel()
-                        .sendMessage("Player `" + firstPlayerName + "` not found")
-                        .queue();
-                return;
-            }
 
-            if (secondRequestStatus.equals("NotFound")) {
-                event
-                        .getChannel()
-                        .sendMessage("Player `" + secondPlayerName + "` not found")
-                        .queue();
-                return;
-            }
+            if (checkStatus(event, firstPlayerName, firstRequestStatus)) return;
 
-            if (firstRequestStatus.equals("Success") && secondRequestStatus.equals("Success")) {
-                event
-                        .getChannel()
-                        .sendMessage("\nPlayers `" + firstPlayerName + "` and `" + secondPlayerName + "` found. Gathering data")
-                        .queue();
-            }
+            if (checkStatus(event, secondPlayerName, secondRequestStatus)) return;
 
-            if (firstRequestStatus.equals("Success") && secondRequestStatus.equals("Success")) {
-                ProfileDataRequest fPProfileStats = fPStats.as(ProfileDataRequest.class);
-                ProfileDataRequest SPProfileStats = sPStats.as(ProfileDataRequest.class);
+            event
+                    .getChannel()
+                    .sendMessage("\nPlayers `" + firstPlayerName + "` and `" + secondPlayerName + "` found. Gathering data")
+                    .queue();
 
-                StringBuilder stringBuilder = getAndMergePlayersData(fPProfileStats, SPProfileStats);
+            ProfileDataRequest fPProfileStats = fPStats.as(ProfileDataRequest.class);
+            ProfileDataRequest SPProfileStats = sPStats.as(ProfileDataRequest.class);
 
-                String fPlink = getBaseUrl() + firstPlayerName + "/overview?ref=discord";
-                String sPlink = getBaseUrl() + secondPlayerName + "/overview?ref=discord";
+            StringBuilder stringBuilder = getAndMergePlayersData(fPProfileStats, SPProfileStats);
 
-                // disabled cuz of permissions (i suppose)
+            String fPlink = getBaseUrl() + firstPlayerName + "/overview?ref=discord";
+            String sPlink = getBaseUrl() + secondPlayerName + "/overview?ref=discord";
+
+            // disabled cuz of permissions (i suppose)
 //            EmbedBuilder embedBuilder = new EmbedBuilder();
 //            embedBuilder.setTitle("\nStats for `" + playerName + "`\n");
 //            embedBuilder.setDescription("For more stats, visit:\n" + link);
 //
-                MessageBuilder builder = new MessageBuilder();
+            MessageBuilder builder = new MessageBuilder();
 //            builder.setEmbed(embedBuilder.build());
-                builder.append("\nCompare for `" + firstPlayerName + "` and `" + secondPlayerName + "`\n");
-                builder.append("\n" + stringBuilder);
-                builder.append("\nFor more stats for `" + firstPlayerName + "`, visit:\n" + fPlink);
-                builder.append("\nFor more stats for `" + secondPlayerName + "`, visit:\n" + sPlink);
+            builder.append("\nCompare for `" + firstPlayerName + "` and `" + secondPlayerName + "`\n");
+            builder.append("\n" + stringBuilder);
+            builder.append("\nFor more stats for `" + firstPlayerName + "`, visit:\n" + fPlink);
+            builder.append("\nFor more stats for `" + secondPlayerName + "`, visit:\n" + sPlink);
 
-                event
-                        .getChannel()
-                        .sendMessage(builder.build())
-                        .queue();
-            }
+            event
+                    .getChannel()
+                    .sendMessage(builder.build())
+                    .queue();
         }
+    }
+
+    private static boolean checkStatus(GuildMessageReceivedEvent event, String firstPlayerName, String firstRequestStatus) {
+        if (!firstRequestStatus.equals("Success")) {
+            event.getChannel()
+                    .sendMessage("Player `" + firstPlayerName + "` not found or something went wrong. " +
+                            "Error: " + firstRequestStatus)
+                    .queue();
+            log.warn("Player '{}' stats wasn't showed. Error: '{}'", firstPlayerName, firstRequestStatus);
+            return true;
+        }
+        return false;
     }
 
     public static void sendError(GuildMessageReceivedEvent event) {
         if (!isBot(event)) {
             User author = event.getMessage().getAuthor();
-            log.info("{} says something wrong.", author.getName());
+            log.info("'{}' says something wrong.", author.getName());
             event
                     .getChannel()
                     .sendMessage(
