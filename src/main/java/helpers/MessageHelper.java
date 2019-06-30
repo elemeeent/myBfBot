@@ -7,6 +7,7 @@ import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.HttpStatus;
 import org.jetbrains.annotations.NotNull;
 import pojo.lastMaps.DataReportsRequest;
@@ -14,11 +15,14 @@ import pojo.lastMaps.Report;
 import pojo.mapReport.DataMapRequest;
 import pojo.profileStats.ProfileDataRequest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static dataParser.JsonParseHelper.*;
 import static helpers.ChatHelper.isBot;
-import static helpers.DataHandlerHelper.getAuthorNickname;
-import static helpers.DataHandlerHelper.playerNamesSeparator;
+import static helpers.DataHandlerHelper.*;
 import static requests.BattlefieldStatsRequest.*;
+import static requests.TeamStatsUrl.getTeamStats;
 
 @Slf4j
 public class MessageHelper {
@@ -57,10 +61,12 @@ public class MessageHelper {
                             "\n1) type `//stats %playerName%` to get his statistics" +
                             "\n2) type `//me` to get your profile stats" +
                             "\n3) type `//compare %playerName% %playerName%` to compare 2 players" +
+                            "\n4) type `//team %teamName%` to get statistics for team members" +
                             "\n\nExamples: " +
                             "\n`//stats i_am_prooo_tv`" +
                             "\n`//me`" +
-                            "\n`//compare fu2zy farmlx`")
+                            "\n`//compare fu2zy farmlx`" +
+                            "\n`//team ru-team`")
                     .queue();
         }
     }
@@ -93,13 +99,7 @@ public class MessageHelper {
             StringBuilder stringBuilder = getAndMergePlayerData(profileStats);
             String link = getBaseUrl() + playerName + "/overview?ref=discord";
 
-            // disabled cuz of permissions (i suppose)
-//            EmbedBuilder embedBuilder = new EmbedBuilder();
-//            embedBuilder.setTitle("\nStats for `" + playerName + "`\n");
-//            embedBuilder.setDescription("For more stats, visit:\n" + link);
-//
             MessageBuilder builder = new MessageBuilder();
-//            builder.setEmbed(embedBuilder.build());
             builder.append("\nStats for `" + playerName + "`\n");
             builder.append("\n" + stringBuilder);
             builder.append("\nFor more stats, visit:\n" + link);
@@ -237,6 +237,79 @@ public class MessageHelper {
             }
 
             event.getChannel().sendMessage("\nStats for `" + playerName + "`\n" + stringBuilder).queue();
+        }
+    }
+
+    public static void sendTeamMembersStats(GuildMessageReceivedEvent event) {
+        if (!isBot(event)) {
+            String teamName = "";
+            if (event.getMessage().getContentRaw().startsWith("//team ")) {
+                String contentRaw = event.getMessage().getContentRaw();
+                String[] split = contentRaw.split("//team ");
+                teamName = split[1];
+            }
+
+            User author = event.getMessage().getAuthor();
+            log.info("'{}' requests stats for team '{}'", author.getName(), teamName);
+
+            Response teamStats = getTeamStats(teamName);
+
+            int statusCode = teamStats.getStatusCode();
+            if (statusCode != HttpStatus.SC_OK) {
+                log.warn("Error while getting team members for team {}. Request code is {}.", teamName, statusCode);
+                event.getChannel()
+                        .sendMessage("\nTeam `" + teamName + "` not found or page unavailable. Sorry :(")
+                        .queue();
+                return;
+            }
+
+            String[] teamMembers = getTeamMembers(teamStats);
+            List<ProfileDataRequest> profilesList = new ArrayList<>();
+            List<String> errorPlayers = new ArrayList<>();
+
+            assert teamMembers != null;
+            for (String teamMember : teamMembers) {
+                Response stats = getProfileStats(teamMember);
+                String status = stats.then().extract().path("status").toString();
+
+                if (checkStatus(event, teamMember, status)) {
+                    errorPlayers.add(teamMember);
+                    continue;
+                } else {
+                    profilesList.add(stats.as(ProfileDataRequest.class));
+                }
+            }
+
+            if (!CollectionUtils.isEmpty(errorPlayers)) {
+                event.getChannel()
+                        .sendMessage("Couldn't get data for this players: " + errorPlayers)
+                        .queue();
+            }
+
+            if (CollectionUtils.isEmpty(profilesList)) {
+                event.getChannel()
+                        .sendMessage("Couldn't get data for this team: " + teamName)
+                        .queue();
+            }
+
+            for (ProfileDataRequest profileDataRequest : profilesList) {
+                String playerName = profileDataRequest.getPlatformUserIdentifier();
+                StringBuilder stringBuilder = getAndMergePlayerData(profileDataRequest);
+                String link = getBaseUrl() + playerName + "/overview?ref=discord";
+
+                MessageBuilder builder = new MessageBuilder();
+                builder.append("\nStats for `" + playerName + "`\n");
+                builder.append("\n" + stringBuilder);
+                builder.append("\nFor more stats, visit:\n" + link);
+
+                event.getChannel()
+                        .sendMessage(builder.build())
+                        .queue();
+            }
+
+            event.getChannel()
+                    .sendMessage("Team: " + teamName + " roster:\n" + "https://league.esport-battlefield.com/team/" + teamName)
+                    .queue();
         }
     }
 

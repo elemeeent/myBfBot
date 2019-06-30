@@ -48,6 +48,10 @@ public class FirstEvent extends ListenerAdapter {
             sendPlayersCompareStats(event);
             return;
         }
+        if (messageSent.matches("//team .*")) {
+            sendTeamMembersStats(event);
+            return;
+        }
         if (messageSent.matches("//.*")) {
             sendError(event);
         }

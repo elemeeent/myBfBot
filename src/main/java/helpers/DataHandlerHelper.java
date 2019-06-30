@@ -1,5 +1,6 @@
 package helpers;
 
+import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
@@ -43,6 +44,35 @@ public class DataHandlerHelper {
             }
         }
         return playerNames;
+    }
+
+    public static String[] getTeamMembers(Response teamResponse) {
+        log.info("Parse team members");
+        String content = teamResponse.asString();
+
+        if (!content.contains("<meta name=\"twitter:description\" content=\"BFV Pre-Season Roster 8v8 ")) {
+            log.info("Error while parsing html page for team");
+            return null;
+        }
+
+        if (!content.contains("\" />\n<meta name=\"twitter:title\"")) {
+            log.info("Error while parsing html page for members");
+            return null;
+        }
+
+        String[] playersArray = null;
+        String[] firstSplit = content.split("<meta name=\"twitter:description\" content=\"BFV Pre-Season Roster 8v8 ");
+
+        for (String s : firstSplit) {
+            if (s.contains("\" />\n<meta name=\"twitter:title\"")) {
+                String[] secondSplit = s.split("\" />\n<meta name=\"twitter:title\"");
+                if (secondSplit.length >= 2) {
+                    playersArray = secondSplit[0].split(" ");
+                }
+            }
+        }
+        return playersArray;
+
     }
 
 }
